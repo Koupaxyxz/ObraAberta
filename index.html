@@ -1,0 +1,707 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ObraAberta | Fiscalizacao cidada</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+:root{
+  --navy:#0d1b2a;
+  --navy-2:#12263d;
+  --amber:#e8850a;
+  --amber-soft:#fff2de;
+  --red:#b2332a;
+  --red-soft:#fff0ec;
+  --green:#1f6f47;
+  --green-soft:#eef8f2;
+  --blue:#1f5f9a;
+  --ink:#18202b;
+  --muted:#5d6878;
+  --line:#dde4eb;
+  --surface:#fff;
+  --surface-2:#f4f6f8;
+  --shadow:0 10px 35px rgba(13,27,42,.08);
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:"DM Sans",sans-serif;background:var(--surface);color:var(--ink)}
+button,input,textarea{font:inherit}
+button{cursor:pointer;border:0}
+.view{display:none}
+.view.active{display:block}
+.wrap,.section{max-width:1120px;margin:0 auto}
+.section{padding:2rem}
+.stack{display:flex;flex-direction:column;gap:1rem}
+.mono{font:500 .72rem "DM Mono",monospace;letter-spacing:.12em;text-transform:uppercase}
+.amber{color:var(--amber)}
+.muted{color:var(--muted);line-height:1.7}
+
+.nav{
+  position:sticky;top:0;z-index:30;display:flex;justify-content:space-between;align-items:center;
+  gap:1rem;padding:.9rem 2rem;background:rgba(13,27,42,.96);border-bottom:3px solid var(--amber)
+}
+.brand{display:flex;align-items:center;gap:.8rem;background:transparent;color:#fff}
+.brand-mark{width:2.2rem;height:2.2rem;display:grid;place-items:center;border-radius:.7rem;background:var(--amber);color:var(--navy);font:900 1.2rem "Playfair Display",serif}
+.brand-text{font-weight:700}.brand-text span{color:var(--amber)}
+.nav-right{display:flex;align-items:center;gap:.8rem}
+.nav-link{background:transparent;color:rgba(255,255,255,.8)}
+.badge{display:flex;align-items:center;gap:.55rem;padding:.45rem .75rem;border-radius:999px;background:rgba(31,111,71,.2);color:#d9f7e7;border:1px solid rgba(255,255,255,.15);font:500 .7rem "DM Mono",monospace}
+.badge.warning{background:rgba(232,133,10,.18);color:#ffe0a6}
+.dot{width:.55rem;height:.55rem;border-radius:50%;background:currentColor;animation:pulse 1.4s infinite}
+
+.hero{
+  position:relative;overflow:hidden;padding:5rem 2rem 4rem;
+  background:radial-gradient(circle at top left,rgba(232,133,10,.22),transparent 36%),linear-gradient(160deg,var(--navy) 0%,var(--navy-2) 60%,#09111a 100%)
+}
+.hero-bg{
+  position:absolute;inset:0;background:
+  linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);
+  background-size:42px 42px;mask-image:linear-gradient(to bottom,rgba(0,0,0,.85),transparent)
+}
+.hero-body{position:relative;max-width:780px;margin:0 auto;text-align:center}
+.hero h1,.results-head h2,.detail-hero h2,.section h2{margin:0;line-height:1.08;letter-spacing:-.04em;font-family:"Playfair Display",serif}
+.hero h1{font-size:clamp(2.3rem,6vw,4.2rem);color:#fff}
+.hero-copy{max-width:700px;margin:1.2rem auto 0;color:rgba(255,255,255,.72);line-height:1.75}
+
+.search{display:flex;overflow:hidden;border-radius:1rem;background:#fff;box-shadow:0 18px 50px rgba(13,27,42,.22)}
+.search input{flex:1;padding:1rem 1.1rem;border:0;outline:none}
+.search button{padding:0 1.2rem;background:var(--amber);color:var(--navy);font-weight:700}
+.search.compact{max-width:560px;margin-top:1rem}
+#home-search-form{max-width:720px;margin:2rem auto 0}
+.hints{display:flex;justify-content:center;flex-wrap:wrap;gap:.6rem;margin-top:1rem}
+.hints button{padding:.45rem .8rem;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.74)}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#d9861e}
+.stats article{padding:1.3rem 1rem;text-align:center;background:linear-gradient(180deg,#f5af3f 0%,#eba230 100%)}
+.stats strong{display:block;font:700 clamp(1.2rem,3vw,2rem) "Playfair Display",serif;color:var(--navy)}
+.stats span{display:block;margin-top:.25rem;font-size:.82rem;color:rgba(13,27,42,.72)}
+
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.card,.panel,.result,.flag{border:1px solid var(--line);border-radius:1.1rem;background:var(--surface);box-shadow:var(--shadow)}
+.card{padding:1.3rem}
+.card strong{display:inline-block;margin-bottom:.8rem;color:var(--amber);font:700 2rem "Playfair Display",serif}
+.card h3,.panel h3,.result h3,.risk-wrap h3{margin:.1rem 0 .6rem;color:var(--navy)}
+
+.results-head{padding:2.2rem 2rem;background:linear-gradient(180deg,var(--navy) 0%,var(--navy-2) 100%);border-bottom:3px solid var(--amber)}
+.results-head h2{font-size:clamp(1.7rem,4vw,2.5rem);color:#fff}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1rem}
+.filters{display:flex;gap:.6rem;flex-wrap:wrap}
+.filter{padding:.55rem .9rem;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--muted)}
+.filter.active{background:var(--navy);border-color:var(--navy);color:#fff}
+
+.result{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:1.2rem;padding:1.3rem;position:relative;overflow:hidden}
+.result::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--green)}
+.result.high::before{background:var(--red)}
+.result.medium::before{background:var(--amber)}
+.tags{display:flex;gap:.45rem;flex-wrap:wrap;margin-bottom:.7rem}
+.tag{padding:.2rem .45rem;border-radius:999px;background:var(--surface-2);font:500 .68rem "DM Mono",monospace;color:var(--muted)}
+.facts{display:flex;gap:.9rem;flex-wrap:wrap;color:var(--muted)}
+.facts strong{color:var(--ink)}
+.result-side{min-width:7rem;display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;gap:1rem}
+.score{min-width:6rem;padding:.75rem .85rem;border-radius:1rem;text-align:center;border:2px solid currentColor;background:var(--green-soft);color:var(--green)}
+.score.medium{background:var(--amber-soft);color:var(--amber)}
+.score.high{background:var(--red-soft);color:var(--red)}
+.score strong{display:block;font:700 1.5rem "Playfair Display",serif}
+.score span{font-size:.73rem;font-weight:700;text-transform:uppercase}
+.open-link{background:transparent;color:var(--blue);font-weight:700}
+
+.crumbs{display:flex;align-items:center;gap:.6rem;padding:1rem 2rem;background:var(--surface-2);border-bottom:1px solid var(--line);color:var(--muted)}
+.crumbs button{background:transparent;color:var(--blue)}
+.detail-hero{padding:2.3rem 2rem;background:linear-gradient(180deg,var(--navy) 0%,var(--navy-2) 100%)}
+.detail-top{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:.5rem;padding:.45rem .8rem;border-radius:999px;background:rgba(31,111,71,.18);border:1px solid rgba(31,111,71,.45);color:var(--green)}
+.pill.medium{background:rgba(232,133,10,.18);border-color:rgba(232,133,10,.45);color:var(--amber)}
+.pill.high{background:rgba(178,51,42,.18);border-color:rgba(178,51,42,.45);color:#f1a49a}
+.pill-dot{width:.55rem;height:.55rem;border-radius:50%;background:currentColor}
+.detail-hero .mono,.detail-hero h2,.detail-location,.hero-stats span,.hero-stats strong{color:#fff}
+.detail-location{max-width:880px;color:rgba(255,255,255,.74)}
+.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:1.4rem}
+.hero-stats article{padding:1rem;border-radius:1rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1)}
+.hero-stats strong{display:block;font:700 1.25rem "Playfair Display",serif}
+.hero-stats span{display:block;margin-top:.25rem;font-size:.76rem;color:rgba(255,255,255,.64)}
+
+.detail-layout{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:1rem;align-items:start}
+.panel{padding:1.2rem}
+.detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.8rem}
+.kv{padding:.9rem;border:1px solid var(--line);border-radius:.9rem;background:var(--surface-2)}
+.kv strong,.kv span{display:block}
+.kv strong{margin-bottom:.35rem;color:#7a8696;font:500 .66rem "DM Mono",monospace;letter-spacing:.12em;text-transform:uppercase}
+.kv span{font-weight:700;color:var(--navy);line-height:1.45}
+.risk-panel{position:sticky;top:5.5rem}
+.risk-wrap{display:flex;gap:1rem;align-items:center;margin-bottom:1rem}
+.risk-ring{width:7.6rem;height:7.6rem;display:grid;place-items:center;border-radius:50%;background:conic-gradient(var(--green) 0 15%,#e6ebf0 15% 100%)}
+.risk-inner{width:5.6rem;height:5.6rem;display:grid;place-items:center;border-radius:50%;background:#fff;text-align:center}
+.risk-inner strong{display:block;font:700 1.6rem "Playfair Display",serif}
+.risk-inner span{font-size:.72rem;color:var(--muted)}
+.flag{display:flex;gap:.7rem;align-items:flex-start;padding:.85rem .95rem;border-left:4px solid var(--green);background:var(--green-soft)}
+.flag.warning{border-left-color:var(--amber);background:var(--amber-soft)}
+.flag.critical{border-left-color:var(--red);background:var(--red-soft)}
+.action{width:100%;padding:.82rem .95rem;border-radius:.9rem;font-weight:700;text-align:left}
+.primary{background:var(--navy);color:#fff}
+.secondary{background:var(--blue);color:#fff}
+.ghost{background:var(--surface-2);color:var(--navy);border:1px solid var(--line)}
+
+.modal-shell{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:1rem;background:rgba(13,27,42,.72);backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-shell.open{opacity:1;pointer-events:auto}
+.modal{width:min(100%,760px);max-height:90vh;overflow:auto;border-radius:1rem;background:#fff;box-shadow:0 20px 55px rgba(13,27,42,.18)}
+.modal-head,.modal-foot{display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:1rem 1.2rem;border-bottom:1px solid var(--line)}
+.modal-foot{border-bottom:0;border-top:1px solid var(--line)}
+.modal-head h3{margin:0;color:var(--navy)}
+.modal-head button{width:2rem;height:2rem;border-radius:999px;background:var(--surface-2);color:var(--muted)}
+.modal-body{padding:1.2rem}
+.modal-body textarea{width:100%;min-height:18rem;padding:1rem;border:1px solid var(--line);border-radius:.9rem;resize:vertical;line-height:1.65}
+
+.toast{position:fixed;right:1rem;bottom:1rem;padding:.85rem 1rem;border-left:4px solid var(--amber);border-radius:.9rem;background:var(--navy);color:#fff;box-shadow:0 20px 55px rgba(13,27,42,.18);opacity:0;transform:translateY(.5rem);pointer-events:none;transition:opacity .2s,transform .2s}
+.toast.open{opacity:1;transform:translateY(0)}
+.empty,.loading{padding:2rem;border:1px dashed var(--line);border-radius:1rem;background:var(--surface-2);text-align:center;color:var(--muted)}
+.spinner{width:2.5rem;height:2.5rem;margin:0 auto 1rem;border:3px solid #d7dee6;border-top-color:var(--amber);border-radius:50%;animation:spin .8s linear infinite}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+@media(max-width:980px){
+  .stats,.grid-3,.hero-stats,.detail-layout{grid-template-columns:1fr}
+  .risk-panel{position:static}
+}
+
+@media(max-width:760px){
+  .nav,.hero,.results-head,.crumbs,.detail-hero,.section{padding-left:1rem;padding-right:1rem}
+  .search,.result,.detail-grid,.risk-wrap{grid-template-columns:1fr;flex-direction:column}
+  .search button{padding:.9rem 1rem}
+  .result-side{align-items:flex-start}
+}
+
+</style>
+  
+</head>
+<body>
+  <nav class="nav">
+    <button class="brand" type="button" data-nav="home">
+      <span class="brand-mark">O</span>
+      <span class="brand-text">Obra<span>Aberta</span></span>
+    </button>
+    <div class="nav-right">
+      <button class="nav-link" type="button" data-nav="home">Inicio</button>
+      <div class="badge" id="status-badge"><span class="dot"></span><span id="status-text">Carregando base...</span></div>
+    </div>
+  </nav>
+
+  <main>
+    <section class="view active" id="view-home">
+      <header class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-body">
+          <p class="mono amber">Transparencia publica em linguagem humana</p>
+          <h1>Descubra obras atrasadas, verba investida e sinais de risco sem travar no GitHub Pages.</h1>
+          <p class="hero-copy">Esta versao usa uma base JSON publicada junto do site. Assim, a interface nao depende de chamada autenticada da API diretamente no navegador.</p>
+          <form class="search" id="home-search-form">
+            <input id="home-search" type="search" placeholder="Ex: UPA, escola, saneamento, hospital...">
+            <button type="submit">Buscar</button>
+          </form>
+          <div class="hints">
+            <button type="button" data-hint="UPA">UPA</button>
+            <button type="button" data-hint="escola">Escola</button>
+            <button type="button" data-hint="hospital">Hospital</button>
+            <button type="button" data-hint="saneamento">Saneamento</button>
+          </div>
+        </div>
+      </header>
+
+      <section class="stats">
+        <article><strong id="stat-total">0</strong><span>registros publicados</span></article>
+        <article><strong id="stat-risk">0</strong><span>casos criticos</span></article>
+        <article><strong id="stat-stopped">0</strong><span>com prazo vencido</span></article>
+        <article><strong id="stat-value">R$ 0,00</strong><span>valor monitorado</span></article>
+      </section>
+
+      <section class="section">
+        <p class="mono amber">O que foi corrigido</p>
+        <h2>Uma estrutura compativel com hospedagem estatica</h2>
+        <div class="grid-3">
+          <article class="card"><strong>01</strong><h3>Sem API no browser</h3><p>O site nao depende mais de proxy, CORS ou chave secreta no frontend.</p></article>
+          <article class="card"><strong>02</strong><h3>Busca local rapida</h3><p>Os dados sao lidos de `data/convenios.json`, o que funciona no GitHub Pages.</p></article>
+          <article class="card"><strong>03</strong><h3>Acao cidada mantida</h3><p>Continuam o calculo de risco, o tempo parado e as mensagens prontas para cobranca.</p></article>
+        </div>
+      </section>
+    </section>
+
+    <section class="view" id="view-results">
+      <header class="results-head">
+        <div class="wrap">
+          <p class="mono">Resultados da busca</p>
+          <h2 id="results-title">"..."</h2>
+          <form class="search compact" id="results-search-form">
+            <input id="results-search-input" type="search" placeholder="Refinar busca...">
+            <button type="submit">Buscar</button>
+          </form>
+        </div>
+      </header>
+      <section class="section">
+        <div class="toolbar">
+          <p id="results-count">Base pronta.</p>
+          <div class="filters">
+            <button class="filter active" type="button" data-filter="todos">Todos</button>
+            <button class="filter" type="button" data-filter="inadimplente">Inadimplente</button>
+            <button class="filter" type="button" data-filter="execucao">Em execucao</button>
+            <button class="filter" type="button" data-filter="concluido">Concluido</button>
+          </div>
+        </div>
+        <div id="results-list" class="stack"></div>
+      </section>
+    </section>
+
+    <section class="view" id="view-detail">
+      <div class="crumbs">
+        <button type="button" data-nav="home">Inicio</button><span>/</span>
+        <button type="button" data-nav="results">Resultados</button><span>/</span>
+        <strong id="detail-breadcrumb">Convenio</strong>
+      </div>
+      <header class="detail-hero">
+        <div class="wrap">
+          <div class="detail-top">
+            <span class="pill" id="detail-pill"><span class="pill-dot"></span><span id="detail-pill-text">-</span></span>
+            <span class="mono" id="detail-kind">Orgao</span>
+          </div>
+          <h2 id="detail-title">-</h2>
+          <p id="detail-location" class="detail-location">-</p>
+          <div class="hero-stats">
+            <article><strong id="detail-total">R$ 0,00</strong><span>valor total</span></article>
+            <article><strong id="detail-paid">R$ 0,00</strong><span>desembolsado</span></article>
+            <article><strong id="detail-end">-</strong><span>fim da vigencia</span></article>
+            <article><strong id="detail-stop">-</strong><span>tempo estimado parado</span></article>
+          </div>
+        </div>
+      </header>
+      <section class="section detail-layout">
+        <div class="stack">
+          <article class="panel"><h3>Resumo</h3><div id="detail-grid" class="detail-grid"></div></article>
+          <article class="panel"><h3>Objeto</h3><p id="detail-object" class="muted">-</p></article>
+        </div>
+        <aside class="panel risk-panel">
+          <p class="mono">Indice de risco</p>
+          <div class="risk-wrap">
+            <div class="risk-ring" id="risk-ring"><div class="risk-inner"><strong id="risk-score">0</strong><span>/100</span></div></div>
+            <div><h3 id="risk-title">-</h3><p id="risk-description" class="muted">-</p></div>
+          </div>
+          <div id="risk-flags" class="stack"></div>
+          <div class="stack">
+            <button class="action primary" type="button" data-action="email">Gerar email para representante</button>
+            <button class="action secondary" type="button" data-action="lai">Gerar pedido de LAI</button>
+            <button class="action secondary" type="button" data-action="wpp">Texto para WhatsApp</button>
+            <button class="action ghost" type="button" id="copy-link">Copiar link desta obra</button>
+          </div>
+        </aside>
+      </section>
+    </section>
+  </main>
+
+  <div class="modal-shell" id="modal">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="modal-title">Acao cidada</h3>
+        <button type="button" id="modal-close">x</button>
+      </div>
+      <div class="modal-body">
+        <p class="mono" id="modal-label"></p>
+        <textarea id="modal-text"></textarea>
+        <p class="muted" id="modal-note"></p>
+      </div>
+      <div class="modal-foot">
+        <button class="action ghost" type="button" id="modal-cancel">Fechar</button>
+        <button class="action primary" type="button" id="modal-confirm">Copiar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+<script>
+const DATA_URL = "./data/convenios.json";
+const FALLBACK = [
+  {numero:"872341/2020",objeto:"Construcao de UPA 24h - Zona Norte",situacao:"Inadimplente",valorConvenio:8400000,valorDesembolsado:6100000,dataInicioVigencia:"2021-03-01",dataFimVigencia:"2022-12-31",orgaoConcedente:{nome:"Ministerio da Saude"},municipioConvenente:{nome:"Manaus"},ufConvenente:{sigla:"AM"},nomeBeneficiario:"Prefeitura Municipal de Manaus"},
+  {numero:"541230/2021",objeto:"Construcao de escola de tempo integral - Bairro Novo",situacao:"Inadimplente",valorConvenio:3100000,valorDesembolsado:1400000,dataInicioVigencia:"2022-01-15",dataFimVigencia:"2022-12-31",orgaoConcedente:{nome:"FNDE"},municipioConvenente:{nome:"Fortaleza"},ufConvenente:{sigla:"CE"},nomeBeneficiario:"Prefeitura de Fortaleza"},
+  {numero:"334512/2019",objeto:"Implantacao de estacao de tratamento de esgoto e saneamento basico",situacao:"Inadimplente",valorConvenio:12700000,valorDesembolsado:9800000,dataInicioVigencia:"2020-06-01",dataFimVigencia:"2021-12-31",orgaoConcedente:{nome:"Ministerio das Cidades"},municipioConvenente:{nome:"Campina Grande"},ufConvenente:{sigla:"PB"},nomeBeneficiario:"Prefeitura de Campina Grande"},
+  {numero:"991023/2020",objeto:"Duplicacao e pavimentacao da BR-316 - trecho urbano",situacao:"Em execucao",valorConvenio:28300000,valorDesembolsado:18100000,dataInicioVigencia:"2021-03-10",dataFimVigencia:"2024-06-30",orgaoConcedente:{nome:"DNIT"},municipioConvenente:{nome:"Teresina"},ufConvenente:{sigla:"PI"},nomeBeneficiario:"Governo do Estado do Piaui"},
+  {numero:"773410/2020",objeto:"Construcao de conjunto habitacional popular - 200 unidades",situacao:"Inadimplente",valorConvenio:19500000,valorDesembolsado:14200000,dataInicioVigencia:"2020-08-01",dataFimVigencia:"2022-08-01",orgaoConcedente:{nome:"Ministerio do Desenvolvimento Regional"},municipioConvenente:{nome:"Belem"},ufConvenente:{sigla:"PA"},nomeBeneficiario:"Prefeitura de Belem"},
+  {numero:"612091/2022",objeto:"Reforma e ampliacao de hospital municipal",situacao:"Inadimplente",valorConvenio:5200000,valorDesembolsado:4100000,dataInicioVigencia:"2022-04-01",dataFimVigencia:"2023-04-01",orgaoConcedente:{nome:"Ministerio da Saude"},municipioConvenente:{nome:"Cuiaba"},ufConvenente:{sigla:"MT"},nomeBeneficiario:"Prefeitura de Cuiaba"},
+  {numero:"209341/2021",objeto:"Construcao de UBS - Unidade Basica de Saude",situacao:"Concluido",valorConvenio:1800000,valorDesembolsado:1800000,dataInicioVigencia:"2021-06-01",dataFimVigencia:"2022-12-31",orgaoConcedente:{nome:"Ministerio da Saude"},municipioConvenente:{nome:"Uberlandia"},ufConvenente:{sigla:"MG"},nomeBeneficiario:"Prefeitura de Uberlandia"},
+  {numero:"881203/2020",objeto:"Pavimentacao e drenagem de vias urbanas",situacao:"Inadimplente",valorConvenio:7300000,valorDesembolsado:5100000,dataInicioVigencia:"2020-11-01",dataFimVigencia:"2022-05-01",orgaoConcedente:{nome:"Ministerio das Cidades"},municipioConvenente:{nome:"Sao Luis"},ufConvenente:{sigla:"MA"},nomeBeneficiario:"Prefeitura de Sao Luis"},
+  {numero:"443210/2019",objeto:"Construcao de escola estadual de ensino medio",situacao:"Concluido",valorConvenio:4500000,valorDesembolsado:4500000,dataInicioVigencia:"2019-09-01",dataFimVigencia:"2021-06-30",orgaoConcedente:{nome:"Ministerio da Educacao"},municipioConvenente:{nome:"Goiania"},ufConvenente:{sigla:"GO"},nomeBeneficiario:"Governo do Estado de Goias"},
+  {numero:"554321/2021",objeto:"Aquisicao de equipamentos hospitalares e ambulancias",situacao:"Em execucao",valorConvenio:2900000,valorDesembolsado:1200000,dataInicioVigencia:"2021-10-01",dataFimVigencia:"2024-10-01",orgaoConcedente:{nome:"Ministerio da Saude"},municipioConvenente:{nome:"Natal"},ufConvenente:{sigla:"RN"},nomeBeneficiario:"Secretaria Estadual de Saude do RN"},
+  {numero:"667123/2020",objeto:"Construcao de ponte sobre o Rio das Mortes",situacao:"Inadimplente",valorConvenio:15600000,valorDesembolsado:11200000,dataInicioVigencia:"2020-03-01",dataFimVigencia:"2022-03-01",orgaoConcedente:{nome:"DNIT"},municipioConvenente:{nome:"Barra do Garcas"},ufConvenente:{sigla:"MT"},nomeBeneficiario:"Governo do Estado do Mato Grosso"},
+  {numero:"321098/2022",objeto:"Implantacao de sistema de abastecimento de agua potavel",situacao:"Em execucao",valorConvenio:6800000,valorDesembolsado:2100000,dataInicioVigencia:"2022-07-01",dataFimVigencia:"2025-07-01",orgaoConcedente:{nome:"Ministerio do Desenvolvimento Regional"},municipioConvenente:{nome:"Petrolina"},ufConvenente:{sigla:"PE"},nomeBeneficiario:"Prefeitura de Petrolina"}
+];
+
+const state = {data:[],query:"",matches:[],results:[],filter:"todos",detail:null,updatedAt:"",source:"",fallback:false};
+const el = {};
+
+document.addEventListener("DOMContentLoaded", init);
+
+async function init(){
+  cache();
+  bind();
+  setStatus("Carregando base...", "");
+  renderLoading("Carregando base publicada...");
+  await loadData();
+  renderInitial();
+  openFromHash();
+}
+
+function cache(){
+  ["status-badge","status-text","home-search","results-title","results-search-input","results-count","results-list","detail-breadcrumb","detail-pill","detail-pill-text","detail-kind","detail-title","detail-location","detail-total","detail-paid","detail-end","detail-stop","detail-grid","detail-object","risk-ring","risk-score","risk-title","risk-description","risk-flags","modal","modal-title","modal-label","modal-text","modal-note","modal-confirm","toast","stat-total","stat-risk","stat-stopped","stat-value"].forEach((id)=>{el[id]=document.getElementById(id);});
+}
+
+function bind(){
+  document.getElementById("home-search-form").addEventListener("submit",(e)=>{e.preventDefault();search(el["home-search"].value);});
+  document.getElementById("results-search-form").addEventListener("submit",(e)=>{e.preventDefault();search(el["results-search-input"].value);});
+  document.querySelectorAll("[data-hint]").forEach((b)=>b.addEventListener("click",()=>search(b.dataset.hint||"")));
+  document.querySelectorAll("[data-nav]").forEach((b)=>b.addEventListener("click",()=>showView(b.dataset.nav||"home")));
+  document.querySelectorAll("[data-filter]").forEach((b)=>b.addEventListener("click",()=>setFilter(b.dataset.filter||"todos",b)));
+  el["results-list"].addEventListener("click",(e)=>{
+    const btn=e.target.closest("[data-index]");
+    if(!btn) return;
+    const item=state.results[Number(btn.dataset.index)];
+    if(item) openDetail(item);
+  });
+  document.querySelectorAll("[data-action]").forEach((b)=>b.addEventListener("click",()=>openModal(b.dataset.action||"email")));
+  document.getElementById("copy-link").addEventListener("click",copyLink);
+  document.getElementById("modal-close").addEventListener("click",closeModal);
+  document.getElementById("modal-cancel").addEventListener("click",closeModal);
+  el["modal"].addEventListener("click",(e)=>{if(e.target===el["modal"]) closeModal();});
+  window.addEventListener("hashchange",openFromHash);
+}
+
+async function loadData(){
+  try{
+    const res=await fetch(DATA_URL,{cache:"no-store"});
+    if(!res.ok) throw new Error("Falha ao carregar JSON");
+    const payload=await res.json();
+    const items=Array.isArray(payload)?payload:payload.items;
+    if(!Array.isArray(items)||!items.length) throw new Error("Base vazia");
+    state.data=items.map(normalizeItem);
+    state.updatedAt=payload.updatedAt||"";
+    state.source=payload.sourceLabel||"Base JSON publicada";
+    state.fallback=false;
+    setStatus("Base publicada carregada","");    
+  }catch(error){
+    state.data=FALLBACK.map(normalizeItem);
+    state.updatedAt="";
+    state.source="Amostra local de contingencia";
+    state.fallback=true;
+    setStatus("Base de contingencia","warning");
+    renderMessage("Nao foi possivel carregar data/convenios.json. O site abriu com uma amostra local.");
+    console.error(error);
+  }
+  updateStats();
+}
+
+function normalizeItem(raw){
+  const item={
+    numero:text(raw.numero||raw.id||"-"),
+    objeto:text(raw.objeto||raw.nome||"Convenio sem descricao"),
+    situacao:text(raw.situacao||"Situacao nao informada"),
+    valorConvenio:num(raw.valorConvenio),
+    valorDesembolsado:num(raw.valorDesembolsado),
+    dataInicioVigencia:text(raw.dataInicioVigencia||"-"),
+    dataFimVigencia:text(raw.dataFimVigencia||"-"),
+    orgaoConcedente:{nome:text(raw.orgaoConcedente&&raw.orgaoConcedente.nome)},
+    municipioConvenente:{nome:text(raw.municipioConvenente&&raw.municipioConvenente.nome)},
+    ufConvenente:{sigla:text(raw.ufConvenente&&raw.ufConvenente.sigla)},
+    nomeBeneficiario:text(raw.nomeBeneficiario||raw.nomeConvenente||"-")
+  };
+  item.haystack=norm([item.numero,item.objeto,item.situacao,item.orgaoConcedente.nome,item.municipioConvenente.nome,item.ufConvenente.sigla,item.nomeBeneficiario].join(" "));
+  return item;
+}
+
+function updateStats(){
+  el["stat-total"].textContent=fmtInt(state.data.length);
+  el["stat-risk"].textContent=fmtInt(state.data.filter((i)=>risk(i).score>=65).length);
+  el["stat-stopped"].textContent=fmtInt(state.data.filter((i)=>stopInfo(i).late).length);
+  el["stat-value"].textContent=money(state.data.reduce((sum,i)=>sum+i.valorConvenio,0));
+}
+
+function renderInitial(){
+  el["results-count"].textContent="Base pronta para consulta.";
+  el["results-list"].innerHTML=`<div class="empty"><p>Digite um termo para buscar por objeto, local, orgao, situacao ou numero do convenio.</p><p><strong>${esc(state.source)}</strong>${state.updatedAt?` | Atualizada em ${esc(date(state.updatedAt))}`:""}</p></div>`;
+}
+
+function renderLoading(message){
+  el["results-list"].innerHTML=`<div class="loading"><div class="spinner"></div><p>${esc(message)}</p></div>`;
+}
+
+function renderMessage(message){
+  toast(message);
+}
+
+function search(raw){
+  const query=String(raw||"").trim();
+  if(!query){ toast("Digite um termo para buscar."); return; }
+  state.query=query;
+  state.filter="todos";
+  document.querySelectorAll("[data-filter]").forEach((b)=>b.classList.toggle("active",b.dataset.filter==="todos"));
+  el["results-title"].textContent=`"${query}"`;
+  el["results-search-input"].value=query;
+  renderLoading("Consultando a base...");
+  showView("results");
+  setTimeout(()=>{
+    state.matches=state.data.filter((item)=>item.haystack.includes(norm(query)));
+    applyFilter();
+  },160);
+}
+
+function setFilter(filter,button){
+  state.filter=filter;
+  document.querySelectorAll("[data-filter]").forEach((b)=>b.classList.remove("active"));
+  button.classList.add("active");
+  applyFilter();
+}
+
+function applyFilter(){
+  let items=state.matches.slice();
+  if(state.filter!=="todos"){
+    items=items.filter((item)=>{
+      const s=norm(item.situacao);
+      return state.filter==="execucao"?s.includes("execucao"):s.includes(state.filter);
+    });
+  }
+  state.results=items;
+  el["results-count"].textContent=`${items.length} resultados na ${state.fallback?"amostra local":"base publicada"}${state.updatedAt?` | Atualizada em ${date(state.updatedAt)}`:""}`;
+  if(!items.length){
+    el["results-list"].innerHTML=`<div class="empty"><p>Nenhum resultado encontrado para esse termo ou filtro.</p></div>`;
+    return;
+  }
+  el["results-list"].innerHTML=items.map((item,index)=>{
+    const r=risk(item);
+    const stop=stopInfo(item);
+    return `<article class="result ${r.className}">
+      <div>
+        <div class="tags">
+          <span class="tag">${esc(item.situacao)}</span>
+          <span class="tag">${esc(item.ufConvenente.sigla)}</span>
+          <span class="tag">${esc(item.orgaoConcedente.nome)}</span>
+        </div>
+        <h3>${esc(item.objeto)}</h3>
+        <p class="muted">${esc(locationText(item))} | Convenio ${esc(item.numero)}</p>
+        <div class="facts">
+          <span>Valor: <strong>${esc(money(item.valorConvenio))}</strong></span>
+          <span>Desembolsado: <strong>${esc(money(item.valorDesembolsado))}</strong></span>
+          <span>Parado: <strong>${esc(stop.label)}</strong></span>
+        </div>
+      </div>
+      <div class="result-side">
+        <div class="score ${r.className}"><strong>${r.score}</strong><span>${esc(r.label)}</span></div>
+        <button class="open-link" type="button" data-index="${index}">Ver detalhes</button>
+      </div>
+    </article>`;
+  }).join("");
+}
+
+function openDetail(item){
+  state.detail=item;
+  const r=risk(item);
+  const stop=stopInfo(item);
+  el["detail-breadcrumb"].textContent=`Convenio ${item.numero}`;
+  el["detail-kind"].textContent=`${item.orgaoConcedente.nome} | Convenio ${item.numero}`;
+  el["detail-title"].textContent=item.objeto;
+  el["detail-location"].textContent=`${locationText(item)} | Beneficiario: ${item.nomeBeneficiario}`;
+  el["detail-total"].textContent=money(item.valorConvenio);
+  el["detail-paid"].textContent=money(item.valorDesembolsado);
+  el["detail-end"].textContent=date(item.dataFimVigencia);
+  el["detail-stop"].textContent=stop.label;
+  el["detail-object"].textContent=item.objeto;
+  el["detail-pill-text"].textContent=item.situacao;
+  el["detail-pill"].className=`pill ${r.className}`;
+  el["detail-grid"].innerHTML=[
+    ["Numero do convenio",item.numero],
+    ["Situacao atual",item.situacao],
+    ["Orgao concedente",item.orgaoConcedente.nome],
+    ["Beneficiario",item.nomeBeneficiario],
+    ["Municipio",item.municipioConvenente.nome],
+    ["UF",item.ufConvenente.sigla],
+    ["Inicio da vigencia",date(item.dataInicioVigencia)],
+    ["Fim da vigencia",date(item.dataFimVigencia)],
+    ["Valor total",money(item.valorConvenio)],
+    ["Valor desembolsado",money(item.valorDesembolsado)],
+    ["Percentual desembolsado",percent(item.valorDesembolsado,item.valorConvenio)],
+    ["Motivo estimado",reason(item)]
+  ].map(([k,v])=>`<div class="kv"><strong>${esc(k)}</strong><span>${esc(v)}</span></div>`).join("");
+  el["risk-score"].textContent=String(r.score);
+  el["risk-title"].textContent=r.title;
+  el["risk-description"].textContent=r.description;
+  el["risk-score"].style.color=r.color;
+  el["risk-ring"].style.background=`conic-gradient(${r.color} 0 ${r.progress}%, #e6ebf0 ${r.progress}% 100%)`;
+  el["risk-flags"].innerHTML=flags(item,stop).map((f)=>`<div class="flag ${f.className}"><span>${esc(f.icon)}</span><span>${esc(f.text)}</span></div>`).join("");
+  location.hash=safeHash(item.numero);
+  showView("detail");
+}
+
+function risk(item){
+  let score=0;
+  const sit=norm(item.situacao);
+  const rate=item.valorConvenio>0?item.valorDesembolsado/item.valorConvenio:0;
+  const stop=stopInfo(item);
+  if(sit.includes("inadimplente")) score+=48;
+  else if(sit.includes("cancel")||sit.includes("rescind")) score+=38;
+  else if(sit.includes("execucao")) score+=14;
+  else if(sit.includes("concluido")) score+=5;
+  else score+=20;
+  if(rate>=.7&&!sit.includes("concluido")) score+=22;
+  else if(rate>=.45&&!sit.includes("concluido")) score+=12;
+  if(stop.late) score+=Math.min(22,Math.round(stop.days/30)*3);
+  score=Math.min(99,Math.round(score));
+  if(score>=65) return {score,label:"Risco alto",title:"Risco critico",description:"Ha forte indicio de atraso ou irregularidade relevante.",className:"high",color:"#b2332a",progress:Math.max(12,score)};
+  if(score>=35) return {score,label:"Risco medio",title:"Risco moderado",description:"O convenio tem sinais de atencao e merece acompanhamento.",className:"medium",color:"#e8850a",progress:Math.max(12,score)};
+  return {score,label:"Risco baixo",title:"Risco baixo",description:"Nao ha sinal critico automatico nesta leitura.",className:"",color:"#1f6f47",progress:Math.max(12,score)};
+}
+
+function stopInfo(item){
+  const end=parse(item.dataFimVigencia);
+  const sit=norm(item.situacao);
+  if(!end||sit.includes("concluido")) return {late:false,days:0,label:"Sem atraso detectado"};
+  const days=Math.floor((new Date()-end)/86400000);
+  if(days<=0) return {late:false,days:0,label:"Prazo ainda vigente"};
+  return {late:true,days,label:duration(days)};
+}
+
+function reason(item){
+  const sit=norm(item.situacao);
+  if(sit.includes("inadimplente")) return "Classificacao oficial indica pendencia ou irregularidade do beneficiario.";
+  if(sit.includes("cancel")||sit.includes("rescind")) return "Convenio interrompido antes da conclusao.";
+  if(stopInfo(item).late) return "Prazo encerrado sem conclusao registrada.";
+  if(sit.includes("execucao")) return "Obra em execucao no recorte atual.";
+  if(sit.includes("concluido")) return "Convenio marcado como concluido na base publicada.";
+  return "Situacao requer consulta complementar.";
+}
+
+function flags(item,stop){
+  const sit=norm(item.situacao);
+  const rate=item.valorConvenio>0?item.valorDesembolsado/item.valorConvenio:0;
+  const out=[];
+  if(sit.includes("inadimplente")) out.push({icon:"!",className:"critical",text:"O convenio aparece como inadimplente na base consultada."});
+  if(stop.late) out.push({icon:"!",className:"critical",text:`Prazo vencido ha ${duration(stop.days)} sem conclusao registrada.`});
+  if(rate>=.6&&!sit.includes("concluido")) out.push({icon:"i",className:"warning",text:`${percent(item.valorDesembolsado,item.valorConvenio)} do valor ja foi desembolsado.`});
+  if(item.valorConvenio>=5000000) out.push({icon:"i",className:"warning",text:`Convenio de alto valor: ${money(item.valorConvenio)}.`});
+  if(!out.length) out.push({icon:"ok",className:"",text:"Nao houve sinal critico automatico nesta leitura."});
+  return out;
+}
+
+function openModal(type){
+  if(!state.detail){ toast("Abra um convenio antes de gerar mensagens."); return; }
+  const item=state.detail;
+  const stop=stopInfo(item);
+  const r=risk(item);
+  const local=locationText(item);
+  const today=new Date().toLocaleDateString("pt-BR");
+  const map={
+    email:{
+      title:"Email para representante",
+      label:"Edite o texto antes de enviar",
+      note:"Use em email, formulario de gabinete ou protocolo parlamentar.",
+      button:"Copiar texto",
+      action:(text)=>copy(text,"Texto copiado."),
+      text:`Assunto: Pedido de acompanhamento do convenio ${item.numero}\n\nPrezado(a) representante,\n\nSolicito acompanhamento e esclarecimentos sobre o convenio abaixo:\nObjeto: ${item.objeto}\nLocal: ${local}\nNumero do convenio: ${item.numero}\nOrgao concedente: ${item.orgaoConcedente.nome}\nSituacao: ${item.situacao}\nTempo estimado parado: ${stop.label}\nValor total: ${money(item.valorConvenio)}\nValor desembolsado: ${money(item.valorDesembolsado)}\nIndice de risco ObraAberta: ${r.score}/100 (${r.label})\n\nPeÃ§o informacoes sobre o motivo do atraso, medidas adotadas e previsao de regularizacao.\n\nDados consultados em ${today}.\n\nAtenciosamente,\n[Seu nome]`
+    },
+    lai:{
+      title:"Pedido de LAI",
+      label:"Pedido pronto para registrar no Fala.BR",
+      note:"Depois de copiar, voce pode colar no portal oficial.",
+      button:"Copiar e abrir Fala.BR",
+      action:async(text)=>{await copy(text,"Texto copiado. Abrindo Fala.BR...");window.open("https://falabr.cgu.gov.br","_blank","noopener");},
+      text:`Pedido de Acesso a Informacao - Lei 12.527/2011\n\nDestinatario: ${item.orgaoConcedente.nome}\nAssunto: Convenio ${item.numero} - ${local}\n\nSolicito:\n1. Motivo da situacao atual "${item.situacao}".\n2. Relatorio fisico-financeiro mais recente da obra.\n3. Medidas adotadas para regularizacao ou conclusao.\n4. Cronograma atualizado e previsao de entrega.\n\nObjeto: ${item.objeto}\nValor total: ${money(item.valorConvenio)}\nValor desembolsado: ${money(item.valorDesembolsado)}\nTempo estimado parado: ${stop.label}\n\nData da consulta: ${today}.\n\n[Nome completo]`
+    },
+    wpp:{
+      title:"Texto para WhatsApp",
+      label:"Pronto para compartilhar em grupos",
+      note:"Se quiser, ajuste o texto antes de abrir o WhatsApp.",
+      button:"Abrir WhatsApp",
+      action:(text)=>window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,"_blank","noopener"),
+      text:`Fiscalizacao cidada:\n${item.objeto}\nLocal: ${local}\nConvenio: ${item.numero}\nSituacao: ${item.situacao}\nTempo estimado parado: ${stop.label}\nValor total: ${money(item.valorConvenio)}\nValor desembolsado: ${money(item.valorDesembolsado)}\nIndice de risco: ${r.score}/100 (${r.label})\n\nVale cobrar explicacoes do poder publico e acompanhar a execucao.`
+    }
+  };
+  const modal=map[type];
+  el["modal-title"].textContent=modal.title;
+  el["modal-label"].textContent=modal.label;
+  el["modal-text"].value=modal.text;
+  el["modal-note"].textContent=modal.note;
+  el["modal-confirm"].textContent=modal.button;
+  el["modal-confirm"].onclick=()=>{modal.action(el["modal-text"].value);closeModal();};
+  el["modal"].classList.add("open");
+}
+
+function closeModal(){ el["modal"].classList.remove("open"); }
+
+function showView(name){
+  document.querySelectorAll(".view").forEach((v)=>v.classList.toggle("active",v.id===`view-${name}`));
+  if(name!=="detail"&&location.hash) history.replaceState(null,"",location.pathname+location.search);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function openFromHash(){
+  const hash=location.hash.replace(/^#/,"").trim();
+  if(!hash||!state.data.length) return;
+  const item=state.data.find((i)=>safeHash(i.numero)===hash);
+  if(item) openDetail(item);
+}
+
+function copyLink(){
+  if(!state.detail){ toast("Nenhum convenio aberto."); return; }
+  copy(`${location.origin}${location.pathname}#${safeHash(state.detail.numero)}`,"Link copiado.");
+}
+
+async function copy(text,message){
+  try{
+    if(navigator.clipboard&&navigator.clipboard.writeText) await navigator.clipboard.writeText(text);
+    else legacyCopy(text);
+    toast(message);
+  }catch(error){
+    legacyCopy(text);
+    toast(message);
+    console.error(error);
+  }
+}
+
+function legacyCopy(text){
+  const temp=document.createElement("textarea");
+  temp.value=text;
+  temp.setAttribute("readonly","true");
+  temp.style.position="absolute";
+  temp.style.left="-9999px";
+  document.body.appendChild(temp);
+  temp.select();
+  document.execCommand("copy");
+  document.body.removeChild(temp);
+}
+
+function setStatus(message,mode){
+  el["status-badge"].className=mode?`badge ${mode}`:"badge";
+  el["status-text"].textContent=message;
+}
+
+function toast(message){
+  el["toast"].textContent=message;
+  el["toast"].classList.add("open");
+  clearTimeout(toast.timer);
+  toast.timer=setTimeout(()=>el["toast"].classList.remove("open"),3200);
+}
+
+function locationText(item){ return [item.municipioConvenente.nome,item.ufConvenente.sigla].filter(Boolean).join(", "); }
+function money(v){ return Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL",minimumFractionDigits:2}); }
+function percent(part,total){ return total?`${Math.round(part/total*100)}%`:"0%"; }
+function fmtInt(v){ return Number(v||0).toLocaleString("pt-BR"); }
+function duration(days){ if(days<=0) return "Sem atraso detectado"; const y=Math.floor(days/365), m=Math.floor(days%365/30), p=[]; if(y) p.push(`${y} ${y===1?"ano":"anos"}`); if(m) p.push(`${m} ${m===1?"mes":"meses"}`); return p.length?p.join(" e "):`${days} ${days===1?"dia":"dias"}`; }
+function date(v){ const d=parse(v); return d?d.toLocaleDateString("pt-BR"):"-"; }
+function parse(v){ if(!v||v==="-" ) return null; const d=new Date(v); return Number.isNaN(d.getTime())?null:d; }
+function norm(v){ return String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase(); }
+function text(v){ const s=String(v||"").trim(); return s||"-"; }
+function num(v){ const n=Number(v||0); return Number.isFinite(n)?n:0; }
+function safeHash(v){ return String(v||"").replace(/[^\w/-]/g,""); }
+function esc(v){ return String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
+
+</script>
+</body>
+</html>
+
