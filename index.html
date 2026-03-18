@@ -6,6 +6,7 @@
 <title>ObraAberta — Fiscalize o dinheiro público</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+/* O CSS permanece exatamente o mesmo */
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
   --navy:#0d1b2a;--amber:#e8850a;--amber-light:#fef3e2;
@@ -209,7 +210,6 @@ footer{background:var(--navy);color:rgba(255,255,255,0.5);padding:40px 32px;bord
   </div>
 </nav>
 
-<!-- HOME -->
 <div id="view-home" class="view active">
   <div class="hero">
     <div class="hero-content fade-in">
@@ -254,7 +254,6 @@ footer{background:var(--navy);color:rgba(255,255,255,0.5);padding:40px 32px;bord
   </footer>
 </div>
 
-<!-- RESULTS -->
 <div id="view-results" class="view">
   <div class="results-header">
     <div style="max-width:1100px;margin:0 auto;">
@@ -286,7 +285,6 @@ footer{background:var(--navy);color:rgba(255,255,255,0.5);padding:40px 32px;bord
   </footer>
 </div>
 
-<!-- DETAIL -->
 <div id="view-detail" class="view">
   <div class="obra-nav">
     <a onclick="goHome()">Início</a><span>/</span>
@@ -356,7 +354,6 @@ footer{background:var(--navy);color:rgba(255,255,255,0.5);padding:40px 32px;bord
   </footer>
 </div>
 
-<!-- MODAL -->
 <div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal">
     <div class="modal-header">
@@ -380,7 +377,8 @@ footer{background:var(--navy);color:rgba(255,255,255,0.5);padding:40px 32px;bord
 <script>
 const API_KEY = '1a0450c005e125e2d271ad48dc10ba48';
 const BASE    = 'https://api.portaldatransparencia.gov.br/api-de-dados';
-const PROXY   = 'https://api.allorigins.win/raw?url=';
+// NOVA URL DO PROXY:
+const PROXY   = 'https://corsproxy.io/?'; 
 
 let currentView   = 'home';
 let allResults    = [];
@@ -444,20 +442,29 @@ async function doSearch(){
   showView('results');
 
   try {
-    const apiUrl = `${BASE}/convenios?pagina=1&tamanhoPagina=20&objeto=${encodeURIComponent(q)}&chave-api-dados=${API_KEY}`;
+    // 1. A URL não tem mais a chave no final
+    const apiUrl = `${BASE}/convenios?pagina=1&tamanhoPagina=20&objeto=${encodeURIComponent(q)}`;
     const url = PROXY + encodeURIComponent(apiUrl);
-    const res = await fetch(url);
+    
+    // 2. A requisição agora passa a chave nos "Headers"
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'chave-api-dados': API_KEY,
+        'Accept': 'application/json'
+      }
+    });
+
     if(!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     allResults = Array.isArray(data) ? data : (data.data || data.convenios || []);
+    
     if(allResults.length === 0) {
-      // fallback para mock se API não retornar nada
       allResults = buscarMock(q);
     }
     renderResults('todos');
   } catch(e) {
     console.error(e);
-    // Fallback para dados simulados em caso de erro
     allResults = buscarMock(q);
     if(allResults.length > 0) {
       renderResults('todos');
@@ -568,7 +575,6 @@ function goDetail(i){
     ['Fim vigência',       c.dataFimVigencia?fData(c.dataFimVigencia):'—'],
   ].map(([l,v])=>`<div class="detail-card"><div class="detail-card-label">${l}</div><div class="detail-card-value">${v}</div></div>`).join('');
 
-  // Painel de risco — cor dinâmica
   document.getElementById('risk-panel').style.borderColor = r.color;
   document.getElementById('risk-panel').querySelector('.risk-panel-header').style.background = r.color;
   const pct = Math.round(r.score*0.87);
@@ -580,7 +586,6 @@ function goDetail(i){
   document.getElementById('risk-title').style.color   = r.color;
   document.getElementById('risk-desc').textContent    = r.desc;
 
-  // Flags
   const flags = gerarFlags(c, r);
   document.getElementById('risk-flags').innerHTML = `
     <div class="risk-flags-title">Sinais identificados</div>
@@ -658,66 +663,21 @@ function openModal(type){
     email:{
       title:'✉️ E-mail para seu deputado',
       label:'Texto gerado com dados reais do convênio — edite se necessário',
-      text:`Assunto: Convênio federal irregular — ${local}
-
-Exmo(a). Sr(a). [Nome do Deputado/Vereador],
-
-Solicito sua atuação no acompanhamento do convênio federal abaixo:
-
-📋 Objeto: ${titulo}
-📍 Local: ${local}
-🔢 Convênio nº: ${conv}
-🏛️ Órgão concedente: ${orgao}
-💰 Valor contratado: ${valor}
-💸 Desembolsado: ${desm}
-📊 Situação: ${c.situacao||'Não informada'}
-
-Solicito que V.Exa. interceda junto ao ${orgao} e à CGU para esclarecimentos e eventuais providências.
-
-Dados obtidos via Portal da Transparência em ${hoje}.
-
-Atenciosamente, [Seu nome]`,
+      text:`Assunto: Convênio federal irregular — ${local}\n\nExmo(a). Sr(a). [Nome do Deputado/Vereador],\n\nSolicito sua atuação no acompanhamento do convênio federal abaixo:\n\n📋 Objeto: ${titulo}\n📍 Local: ${local}\n🔢 Convênio nº: ${conv}\n🏛️ Órgão concedente: ${orgao}\n💰 Valor contratado: ${valor}\n💸 Desembolsado: ${desm}\n📊 Situação: ${c.situacao||'Não informada'}\n\nSolicito que V.Exa. interceda junto ao ${orgao} e à CGU para esclarecimentos e eventuais providências.\n\nDados obtidos via Portal da Transparência em ${hoje}.\n\nAtenciosamente, [Seu nome]`,
       note:'Fonte: API Portal da Transparência · Convênio nº '+conv,
       btn:'📋 Copiar texto'
     },
     lai:{
       title:'📋 Pedido de Acesso à Informação (LAI)',
       label:'Formatado conforme a Lei nº 12.527/2011',
-      text:`PEDIDO DE ACESSO À INFORMAÇÃO — Lei nº 12.527/2011
-
-Destinatário: ${orgao} / CGU
-Assunto: Convênio nº ${conv} — ${local}
-
-Eu, [Nome completo], CPF [000.000.000-00], solicito:
-
-1. Situação atual e motivo da classificação como "${c.situacao||'não informada'}";
-2. Relatório de execução física e financeira atualizado;
-3. Medidas administrativas aplicadas ao beneficiário;
-4. Previsão de regularização ou encerramento.
-
-Objeto: ${titulo}
-Valor: ${valor} | Desembolsado: ${desm}
-
-Prazo: 20 dias (art. 11, Lei 12.527/2011).
-
-[Cidade], ${hoje} — [Nome], CPF: [000.000.000-00]`,
+      text:`PEDIDO DE ACESSO À INFORMAÇÃO — Lei nº 12.527/2011\n\nDestinatário: ${orgao} / CGU\nAssunto: Convênio nº ${conv} — ${local}\n\nEu, [Nome completo], CPF [000.000.000-00], solicito:\n\n1. Situação atual e motivo da classificação como "${c.situacao||'não informada'}";\n2. Relatório de execução física e financeira atualizado;\n3. Medidas administrativas aplicadas ao beneficiário;\n4. Previsão de regularização ou encerramento.\n\nObjeto: ${titulo}\nValor: ${valor} | Desembolsado: ${desm}\n\nPrazo: 20 dias (art. 11, Lei 12.527/2011).\n\n[Cidade], ${hoje} — [Nome], CPF: [000.000.000-00]`,
       note:'Envie gratuitamente pelo portal Fala.BR: falabr.cgu.gov.br',
       btn:'📤 Abrir Fala.BR'
     },
     wpp:{
       title:'📲 Texto para WhatsApp',
       label:'Pronto para compartilhar em grupos',
-      text:`🔍 Encontrei no Portal da Transparência:
-
-📋 ${titulo}
-📍 ${local} · Convênio nº ${conv}
-💰 Valor: ${valor}
-💸 Desembolsado: ${desm}
-📊 Situação: ${c.situacao||'Não informada'}
-
-Dados verificáveis em portaldatransparencia.gov.br
-
-Compartilhe para que mais pessoas fiscalizem! 🇧🇷`,
+      text:`🔍 Encontrei no Portal da Transparência:\n\n📋 ${titulo}\n📍 ${local} · Convênio nº ${conv}\n💰 Valor: ${valor}\n💸 Desembolsado: ${desm}\n📊 Situação: ${c.situacao||'Não informada'}\n\nDados verificáveis em portaldatransparencia.gov.br\n\nCompartilhe para que mais pessoas fiscalizem! 🇧🇷`,
       note:'Compartilhe em grupos de bairro para ampliar a fiscalização cidadã.',
       btn:'📲 Abrir WhatsApp'
     }
