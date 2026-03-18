@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ObraAberta | Fiscalizacao cidada</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/styles.css">
+  <script src="./assets/app.js" defer></script>
+</head>
+<body>
+  <nav class="nav">
+    <button class="brand" type="button" data-nav="home">
+      <span class="brand-mark">O</span>
+      <span class="brand-text">Obra<span>Aberta</span></span>
+    </button>
+    <div class="nav-right">
+      <button class="nav-link" type="button" data-nav="home">Inicio</button>
+      <div class="badge" id="status-badge"><span class="dot"></span><span id="status-text">Carregando base...</span></div>
+    </div>
+  </nav>
+
+  <main>
+    <section class="view active" id="view-home">
+      <header class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-body">
+          <p class="mono amber">Transparencia publica em linguagem humana</p>
+          <h1>Descubra obras atrasadas, verba investida e sinais de risco sem travar no GitHub Pages.</h1>
+          <p class="hero-copy">Esta versao usa uma base JSON publicada junto do site. Assim, a interface nao depende de chamada autenticada da API diretamente no navegador.</p>
+          <form class="search" id="home-search-form">
+            <input id="home-search" type="search" placeholder="Ex: UPA, escola, saneamento, hospital...">
+            <button type="submit">Buscar</button>
+          </form>
+          <div class="hints">
+            <button type="button" data-hint="UPA">UPA</button>
+            <button type="button" data-hint="escola">Escola</button>
+            <button type="button" data-hint="hospital">Hospital</button>
+            <button type="button" data-hint="saneamento">Saneamento</button>
+          </div>
+        </div>
+      </header>
+
+      <section class="stats">
+        <article><strong id="stat-total">0</strong><span>registros publicados</span></article>
+        <article><strong id="stat-risk">0</strong><span>casos criticos</span></article>
+        <article><strong id="stat-stopped">0</strong><span>com prazo vencido</span></article>
+        <article><strong id="stat-value">R$ 0,00</strong><span>valor monitorado</span></article>
+      </section>
+
+      <section class="section">
+        <p class="mono amber">O que foi corrigido</p>
+        <h2>Uma estrutura compativel com hospedagem estatica</h2>
+        <div class="grid-3">
+          <article class="card"><strong>01</strong><h3>Sem API no browser</h3><p>O site nao depende mais de proxy, CORS ou chave secreta no frontend.</p></article>
+          <article class="card"><strong>02</strong><h3>Busca local rapida</h3><p>Os dados sao lidos de `data/convenios.json`, o que funciona no GitHub Pages.</p></article>
+          <article class="card"><strong>03</strong><h3>Acao cidada mantida</h3><p>Continuam o calculo de risco, o tempo parado e as mensagens prontas para cobranca.</p></article>
+        </div>
+      </section>
+    </section>
+
+    <section class="view" id="view-results">
+      <header class="results-head">
+        <div class="wrap">
+          <p class="mono">Resultados da busca</p>
+          <h2 id="results-title">"..."</h2>
+          <form class="search compact" id="results-search-form">
+            <input id="results-search-input" type="search" placeholder="Refinar busca...">
+            <button type="submit">Buscar</button>
+          </form>
+        </div>
+      </header>
+      <section class="section">
+        <div class="toolbar">
+          <p id="results-count">Base pronta.</p>
+          <div class="filters">
+            <button class="filter active" type="button" data-filter="todos">Todos</button>
+            <button class="filter" type="button" data-filter="inadimplente">Inadimplente</button>
+            <button class="filter" type="button" data-filter="execucao">Em execucao</button>
+            <button class="filter" type="button" data-filter="concluido">Concluido</button>
+          </div>
+        </div>
+        <div id="results-list" class="stack"></div>
+      </section>
+    </section>
+
+    <section class="view" id="view-detail">
+      <div class="crumbs">
+        <button type="button" data-nav="home">Inicio</button><span>/</span>
+        <button type="button" data-nav="results">Resultados</button><span>/</span>
+        <strong id="detail-breadcrumb">Convenio</strong>
+      </div>
+      <header class="detail-hero">
+        <div class="wrap">
+          <div class="detail-top">
+            <span class="pill" id="detail-pill"><span class="pill-dot"></span><span id="detail-pill-text">-</span></span>
+            <span class="mono" id="detail-kind">Orgao</span>
+          </div>
+          <h2 id="detail-title">-</h2>
+          <p id="detail-location" class="detail-location">-</p>
+          <div class="hero-stats">
+            <article><strong id="detail-total">R$ 0,00</strong><span>valor total</span></article>
+            <article><strong id="detail-paid">R$ 0,00</strong><span>desembolsado</span></article>
+            <article><strong id="detail-end">-</strong><span>fim da vigencia</span></article>
+            <article><strong id="detail-stop">-</strong><span>tempo estimado parado</span></article>
+          </div>
+        </div>
+      </header>
+      <section class="section detail-layout">
+        <div class="stack">
+          <article class="panel"><h3>Resumo</h3><div id="detail-grid" class="detail-grid"></div></article>
+          <article class="panel"><h3>Objeto</h3><p id="detail-object" class="muted">-</p></article>
+        </div>
+        <aside class="panel risk-panel">
+          <p class="mono">Indice de risco</p>
+          <div class="risk-wrap">
+            <div class="risk-ring" id="risk-ring"><div class="risk-inner"><strong id="risk-score">0</strong><span>/100</span></div></div>
+            <div><h3 id="risk-title">-</h3><p id="risk-description" class="muted">-</p></div>
+          </div>
+          <div id="risk-flags" class="stack"></div>
+          <div class="stack">
+            <button class="action primary" type="button" data-action="email">Gerar email para representante</button>
+            <button class="action secondary" type="button" data-action="lai">Gerar pedido de LAI</button>
+            <button class="action secondary" type="button" data-action="wpp">Texto para WhatsApp</button>
+            <button class="action ghost" type="button" id="copy-link">Copiar link desta obra</button>
+          </div>
+        </aside>
+      </section>
+    </section>
+  </main>
+
+  <div class="modal-shell" id="modal">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="modal-title">Acao cidada</h3>
+        <button type="button" id="modal-close">x</button>
+      </div>
+      <div class="modal-body">
+        <p class="mono" id="modal-label"></p>
+        <textarea id="modal-text"></textarea>
+        <p class="muted" id="modal-note"></p>
+      </div>
+      <div class="modal-foot">
+        <button class="action ghost" type="button" id="modal-cancel">Fechar</button>
+        <button class="action primary" type="button" id="modal-confirm">Copiar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+</body>
+</html>
